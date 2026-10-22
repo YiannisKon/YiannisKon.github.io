@@ -216,6 +216,12 @@ li { margin: 0.25rem 0; }
 .figure.photo img { display: block; width: 100%; height: auto; border-radius: 4px; }
 .figure.photo video { display: block; width: 100%; height: auto; border-radius: 4px; background: #000; }
 .figure.photo figcaption { padding: 0 0.4rem; }
+.video-modal { border: 0; padding: 0; background: transparent; max-width: min(92vw, calc((100vh - 7rem) * 9 / 16)); width: 100%; overflow: visible; }
+.video-modal::backdrop { background: rgba(8,10,13,0.86); }
+.video-modal video { display: block; width: 100%; height: auto; border-radius: 6px; background: #000; }
+.video-modal .vm-bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.5rem; color: #F2F0EA; font-size: 0.9rem; }
+.video-modal .vm-close { font: inherit; font-weight: 700; color: #15181D; background: #F2F0EA; border: 0; border-radius: 4px; padding: 0.35rem 0.8rem; cursor: pointer; }
+.video-modal .vm-close:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .mc-vis > img { display: block; width: 100%; height: auto; border-radius: 4px; }
 .tank canvas { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; touch-action: none; cursor: crosshair; border-radius: 3px; }
 .demo-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; align-items: center; }
@@ -396,7 +402,7 @@ footer p { margin: 0; }
           <video id="fov-video" width="586" height="776" autoplay muted loop playsinline preload="metadata" aria-label="Eight-second demo: the vehicle driving with the tank aboard, the vision overlay reading ARMED, fish is driving, and the water test">
             <source src="fov-demo.mp4" type="video/mp4">
           </video>
-          <figcaption><p>Fig. 1. Eight seconds of the demo: the drive, what the Pi sees, and the test with water aboard. <a href="https://www.instagram.com/reel/DdIfr3PRKiI/">Full video on Instagram</a>.</p></figcaption>
+          <figcaption><p>Fig. 1. Eight seconds of the demo: the drive, what the Pi sees, and the test with water aboard. <a href="fov-full.mp4" data-video-modal="fov-full-modal">Watch the full video, with sound (1:45)</a>.</p></figcaption>
         </figure>
       </div>
       <div role="tabpanel" id="fov-photo" aria-labelledby="fov-tab-photo" hidden>
@@ -567,11 +573,17 @@ footer p { margin: 0; }
       <p class="stack"><strong>Built with</strong> Python, OpenCV, Raspberry Pi 5, Raspberry Pi Pico 2 W, mecanum drive, serial.</p>
       <ul class="project-links">
         <li><a href="https://github.com/YiannisKon/Fish-Detection-Mecanum-Wheel-Vehicle">Code on GitHub</a></li>
-        <li><a href="https://www.instagram.com/reel/DdIfr3PRKiI/">Watch the demo on Instagram</a></li>
+        <li><a href="fov-full.mp4" data-video-modal="fov-full-modal">Watch the full demo video</a></li>
       </ul>
     </div>
   </div>
 </article>
+<dialog class="video-modal" id="fov-full-modal" aria-label="Fish-Operated Vehicle, full demo video">
+  <div class="vm-bar"><span>Fish-Operated Vehicle, full demo</span><button type="button" class="vm-close">Close</button></div>
+  <video controls playsinline preload="none" width="720" height="1280" poster="fov-full-poster.jpg">
+    <source src="fov-full.mp4" type="video/mp4">
+  </video>
+</dialog>
 
 <!-- ===================== DIABETES ALERT ===================== -->
 <article class="project dog" id="service-dog">
@@ -1792,6 +1804,25 @@ footer p { margin: 0; }
   document.addEventListener('tabchange', fit);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
   fit();
+})();
+
+/* ---------- Full demo video in a dialog (link falls back to the raw MP4) ---------- */
+(function () {
+  var links = document.querySelectorAll('[data-video-modal]');
+  links.forEach(function (a) {
+    var d = document.getElementById(a.getAttribute('data-video-modal'));
+    if (!d || typeof d.showModal !== 'function') return;
+    var full = d.querySelector('video'), loop = document.getElementById('fov-video');
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (loop) loop.pause();
+      d.showModal();
+      full.play().catch(function () {});
+    });
+    d.querySelector('.vm-close').addEventListener('click', function () { d.close(); });
+    d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+    d.addEventListener('close', function () { full.pause(); });
+  });
 })();
 
 /* ---------- Demo video: respect reduced motion, pause when unseen ---------- */
